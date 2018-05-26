@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<table  id="patterns_table"
+        class="table table-hover"
+        data-toggle="table"
+        data-sort-name="updated_ts"
+        data-url="/api/patterns?user_id={{ user_id }}"
+        data-sort-order="desc">
+    <thead>
+        <tr>
+            <th data-field="name" data-sortable="true">Name</th>
+            <th data-field="pattern" data-sortable="true">Pattern</th>
+            <th data-field="host" data-sortable="true">Host</th>
+            <th data-field="host_user" data-sortable="true">Host User</th>
+            <th data-field="schedule_days">Schedule Days</th>
+            <th data-field="schedule_time">Schedule Time</th>
+            <th data-field="updated_ts" data-sortable="true">Update Time</th>
+        </tr>
+    </thead>
+    <tbody class="searchable">
+    </tbody>
+</table>
+{% endblock %}

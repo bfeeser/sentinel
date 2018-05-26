@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<form role="form" method="post" action="/logs">
+    <div id="log_selector" class="container-fluid">
+        <div class="row">
+            <!-- path form -->
+            <div class="input-group">
+                <span class="input-group-addon">Path</span>
+                {{ form.path(id="path", class="form-control select") }}
+            </div>
+        </div>
+        <div class="row">
+            <!-- pattern form -->
+            <div class="input-group">
+                {{ form.name(type="text", class="form-control", placeholder="Name", id="name") }}
+            </div>
+            <div class="input-group">
+                {{ form.pattern(type="text", class="form-control", placeholder="Pattern", id="pattern") }}
+            </div>
+        </div>
+        <div id="log_buttons" class="row">
+            <!-- submit button -->
+            <div class="col-sm-1">
+                <button type="button" id="log_submit" class="btn btn-primary">Submit</button>
+            </div>
+            <!-- save button -->
+            <div class="col-sm-1">
+                    {{ form.save(text="Save", type="submit", id="log_save", class="btn btn-success") }}
+                    {{ form.csrf_token }}
+                    {{ form.pattern_id() }}
+            </div>
+            <!-- schedule button -->
+            <div class="col-sm-1">
+                <button id="log_schedule"
+                        type="button"
+                        data-toggle="modal"
+                        data-target="#schedule_modal"
+                        class="btn btn-warning">Schedule</button>
+            </div>
+            <!-- delete button -->
+            <div class="col-sm-1">
+                {{ form.delete(text="Delete", type="submit", id="log_delete", class="btn btn-danger") }}
+            </div>
+        </div>
+    </div>
+    <!-- schedule modal http://getbootstrap.com/javascript/#modals--> 
+    <div id="schedule_modal" class="modal fade">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close"
+                        data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">Schedule Pattern</h4>
+                </div>
+                <div class="modal-body">
+                    <h3>Recipients</h3>
+                    {{ form.recipients(type="text", class="form-control", placeholder="A comma-separated list of emails") }}
+                    <h3>Days</h3>
+                    {{ form.days() }}
+                    <h3>Time</h3>
+                    {{ form.time(type="time", class="form-control") }}
+                </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default"
+                    data-dismiss="modal">Close</button>
+            </div>
+            </div>
+        </div>
+    </div>
+</form>
+<table  id="log_table"
+        class="table table-hover"
+        data-toggle="table"
+        data-sort-name="match"
+        data-sort-order="asc">
+    <thead>
+        <tr>
+            <th data-field="log">Log</th>
+            <th data-field="status">Status</th>
+        </tr>
+    </thead>
+    <tbody class="searchable">
+    </tbody>
+</table>
+{% endblock %}

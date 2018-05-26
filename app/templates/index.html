@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<table  id="process_table"
+        class="table table-hover" 
+        data-toggle="table"
+        data-sort-name="pid"
+        data-sort-order="desc">
+    <thead>
+        <tr>
+            <th data-field="pid" data-sortable="true">PID</th>
+            <th data-field="username" data-sortable="true">Username</th>
+            <th data-field="cmdline" data-sortable="true">Command</th>
+            <th data-field="cpu_percent" data-sortable="true">CPU (%)</th>
+            <th data-field="memory_percent" data-sortable="true">Memory (%)</th>
+            <th data-field="status" data-sortable="true">Status</th>
+        </tr>
+    </thead>
+    <tbody class="searchable">
+    </tbody>
+</table>
+{% endblock %}

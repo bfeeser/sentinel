@@ -1,0 +1,1 @@
+* * * * * /home/jharvard/vhosts/sentinel/app/alerts.py --log_file_prefix=/home/jharvard/vhosts/sentinel/logs/sentinel_alerts

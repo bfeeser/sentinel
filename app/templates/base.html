@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta name="author" content="Ben Feeser">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     
+        <title>Sentinel</title>
+
+        <link href="{{ url_for('static', filename='css/bootstrap.min.css')}}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/bootstrap-table.min.css') }}" rel="stylesheet">
+        <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+
+        <script src="{{ url_for('static', filename='js/jquery-2.1.3.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap-table.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+    </head>
+
+    <!-- navigation bar start -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/">
+                    <img id="logo" src="{{ url_for('static', filename='img/logo.png') }}"/>
+                    Sentinel
+                </a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li class={{ "active" if active == 0 else "inactive" }}>
+                        <a href="/">Processes</a>
+                    </li>
+                    <li class={{ "active" if active == 1 else "inactive" }}>
+                        <a href="/logs">Logs</a>
+                    </li>
+                    <li class={{ "active" if active == 2 else "inactive" }}>
+                        <a href="/patterns">Patterns</a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class={{ "active" if active == 3 else "inactive" }}>
+                        <a href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+    </nav>
+    <!-- navigation bar end -->
+
+    <!-- host and user selector -->
+    <div id="host-selector" class="container-fluid">
+        <div class="row">
+            <!-- host selector -->
+            <div class="col-md-1">
+                <div class="input-group">
+                    <span class="input-group-addon">Host</span>
+                    <select id="host" class="form-control select">
+                        {% for (id, host, user, path) in hosts %}
+                        <option>{{ host }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <!-- user selector -->
+            <div class="col-md-1">
+                <div class="input-group">
+                    <span class="input-group-addon">User</span>
+                    <select id="user" class="form-control select">
+                        {% for (id, host, user, path) in hosts %}
+                        <option>{{ user }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <!-- search bar -->
+            <div class="col-md-1">
+                <div class="input-group">
+                    <span class="input-group-addon">Search</span>
+                    <input id="search" type="text" class="form-control" placeholder="..."/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <body>
+        <!-- display messages to user -->
+        <!-- http://flask.pocoo.org/docs/0.10/patterns/flashing/ -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} fade in alert-dismissable" role="alert">
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {{ message }}
+            </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <!-- https://wtforms.readthedocs.org/en/1.0.4/crash_course.html#displaying-errors -->
+        {% if form %}
+            {% if form.errors %}
+                {% for field_name, field_errors in form.errors|dictsort if field_errors %}
+                    {% for error in field_errors %}
+                    <div class="alert alert-danger fade in alert-dismissable" role="alert">
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        {{ form[field_name].label }}: {{ error }}
+                     </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+        {% block js %}{% endblock %}
+        {% block content %}{% endblock %}
+  </body>
+</html>

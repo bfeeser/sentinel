@@ -1,0 +1,67 @@
+#logo { 
+    display: inline;
+    height: 100%;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+
+#host-selector {
+    margin-top: 50px;s
+}
+
+.input-group-addon {
+    font-weight: bold;
+}
+
+.col-md-1 {
+    width: 33%;
+}
+
+.input-group {
+    width: 50%;
+}
+
+.table-hover {
+    width: 100%;
+    table-layout: fixed;
+}
+
+.container-fluid {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-body {
+    overflow: auto;
+    white-space: wrap;
+    word-wrap: break-word;
+    font-family: @font-family-base monospace;
+}
+
+.row {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+#login {
+    margin-left: 15px;
+}
+
+#login div .input-group {
+    margin-bottom: 10px;
+}
+
+#register {
+    margin-left: 15px;
+}
+
+#log_selector {
+    margin-left: 15px;
+}
