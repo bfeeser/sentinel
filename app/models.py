@@ -1,9 +1,9 @@
-'''
+"""
 Ben Feeser
 Sentinel
 
 Library of class models.
-'''
+"""
 
 from app import bcrypt, cursor, db
 from flask.ext.login import UserMixin
@@ -21,10 +21,11 @@ class User(UserMixin):
 
         # get user attributes from database
         cursor.execute(
-            ''' SELECT *
+            """ SELECT *
                 FROM users
-                WHERE email = %s''',
-                (email,))
+                WHERE email = %s""",
+            (email,),
+        )
 
         if cursor.rowcount:
             # store attributes in a dictionary
@@ -32,18 +33,19 @@ class User(UserMixin):
             self.data = dict(zip(cols, cursor.fetchone()))
 
             # flask-login only accepts unicode ids
-            self.id = unicode(self.data['id'])
+            self.id = unicode(self.data["id"])
 
     def add(self, password):
         # method to add user into db
         # returns false on failure; true on success
         try:
             cursor.execute(
-                ''' INSERT INTO users
+                """ INSERT INTO users
                         (email, password)
                     VALUES(%s, %s)
-                ''', (self.email, bcrypt.generate_password_hash(password))
-                )
+                """,
+                (self.email, bcrypt.generate_password_hash(password)),
+            )
         except Exception as e:
             # insert was unsuccessful
             print e
@@ -65,9 +67,11 @@ class Pattern(object):
 
         # get pattern attributes from database
         cursor.execute(
-            ''' SELECT *
+            """ SELECT *
                 FROM patterns
-                WHERE id = %s''', (id,))
+                WHERE id = %s""",
+            (id,),
+        )
 
         if cursor.rowcount:
             # store attributes in a dictionary
@@ -75,55 +79,88 @@ class Pattern(object):
             self.data = dict(zip(cols, cursor.fetchone()))
 
             # set schedule time to string; not a time object
-            if self.data['schedule_time']:
-                self.data['schedule_time'] = \
-                    str(self.data ['schedule_time'])
+            if self.data["schedule_time"]:
+                self.data["schedule_time"] = str(self.data["schedule_time"])
 
     def get_host(self):
         # using pattern host id get host info
         cursor.execute(
-            ''' SELECT host, host_user, path
+            """ SELECT host, host_user, path
                 FROM hosts
-                WHERE id = %s''', (self.data.get('host'),)
-            )
+                WHERE id = %s""",
+            (self.data.get("host"),),
+        )
 
-    def update(self, pattern, name, user, host, recipients,
-            schedule_days, schedule_time):
+    def update(
+        self,
+        pattern,
+        name,
+        user,
+        host,
+        recipients,
+        schedule_days,
+        schedule_time,
+    ):
         # function to update pattern data
         # overwrite data with provided kwargs
-        self.data['pattern'] = pattern
-        self.data['name'] = name
-        self.data['user'] = user
-        self.data['host'] = host
-        self.data['recipients'] = recipients
-        self.data['schedule_days'] = schedule_days
-        self.data['schedule_time'] = schedule_time
+        self.data["pattern"] = pattern
+        self.data["name"] = name
+        self.data["user"] = user
+        self.data["host"] = host
+        self.data["recipients"] = recipients
+        self.data["schedule_days"] = schedule_days
+        self.data["schedule_time"] = schedule_time
 
         # build query to update db
         cursor.execute(
-            ''' REPLACE INTO patterns
+            """ REPLACE INTO patterns
                 (id, pattern, name, user, host, recipients,
                  schedule_days, schedule_time)
                 VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
-            ''', (self.id, pattern, name, user, host, recipients, 
-                  schedule_days, schedule_time,)
-            )
+            """,
+            (
+                self.id,
+                pattern,
+                name,
+                user,
+                host,
+                recipients,
+                schedule_days,
+                schedule_time,
+            ),
+        )
 
         db.commit()
 
     @classmethod
-    def create(cls, pattern, name, user, host, recipients,
-               schedule_days, schedule_time):
+    def create(
+        cls,
+        pattern,
+        name,
+        user,
+        host,
+        recipients,
+        schedule_days,
+        schedule_time,
+    ):
         # function to create pattern
         # build query to insert into db
         cursor.execute(
-            ''' INSERT INTO patterns
+            """ INSERT INTO patterns
                 (pattern, name, user, host, recipients,
                  schedule_days, schedule_time)
                 VALUES(%s, %s, %s, %s, %s, %s, %s)
-            ''', (pattern, name, user, host, recipients, 
-                  schedule_days, schedule_time,)
-            )
+            """,
+            (
+                pattern,
+                name,
+                user,
+                host,
+                recipients,
+                schedule_days,
+                schedule_time,
+            ),
+        )
 
         db.commit()
 
@@ -133,10 +170,10 @@ class Pattern(object):
     def delete(self, user):
         # ensure only owners can delete patterns
         cursor.execute(
-            ''' DELETE FROM patterns
+            """ DELETE FROM patterns
                 WHERE id = %s
-                AND user = %s''',
-                (self.id, user)
-            )
+                AND user = %s""",
+            (self.id, user),
+        )
 
         db.commit()
