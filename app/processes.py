@@ -17,7 +17,7 @@ import psutil
 import simplejson as json
 import subprocess
 from flask import Response, abort
-from forms import day_map
+from .forms import day_map
 
 
 def jsonify(obj):
@@ -88,7 +88,7 @@ def get_processes(host, username, port=None):
         pinfo["cmdline"] = " ".join(pinfo["cmdline"])
 
         # create fancy status label using status map
-        for status in status_map.keys():
+        for status in list(status_map.keys()):
             if pinfo["status"] in status_map[status]:
                 pinfo["status"] = get_label(status, pinfo["status"].title())
 
@@ -218,7 +218,7 @@ def get_patterns(cursor, user_id):
     cols = [i[0] for i in cursor.description]
     for row in cursor.fetchall():
         # create pattern dict
-        pattern = dict(zip(cols, row))
+        pattern = dict(zip(cols, row)))
 
         # create name anchor tag
         pattern["name"] = (

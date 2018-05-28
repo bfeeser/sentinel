@@ -11,10 +11,10 @@ import smtplib
 import mimetypes
 import os
 import logging
-import config
+from . import config
 import tornado.options
 from email import encoders
-from processes import get_logs
+from .processes import get_logs
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -22,7 +22,7 @@ from email.mime.text import MIMEText
 
 def get_scheduled_patterns():
     # connects to db to get all scheduled alerts
-    (db, cursor) = config.connect_db()
+    db, cursor = config.connect_db()
 
     # use tornado logging and option parsing
     tornado.options.parse_command_line()
@@ -127,11 +127,11 @@ def send(**kwargs):
         attachment = os.path.join(str(attachment))
 
         # parse attachment's encoding; only handles text and binary
-        (ctype, encoding) = mimetypes.guess_type(attachment)
+        ctype, encoding = mimetypes.guess_type(attachment)
         if ctype is None or encoding is not None:
             ctype = "application/octet-stream"
 
-        (maintype, subtype) = ctype.split("/", 1)
+        maintype, subtype = ctype.split("/", 1)
 
         if maintype == "text":
             # add text attachement
@@ -155,6 +155,7 @@ def send(**kwargs):
         )
 
         msg.attach(attachment)
+
     # connect to gmail and send message
     server = smtplib.SMTP("smtp.gmail.com:587")
     server.starttls()

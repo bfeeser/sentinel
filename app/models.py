@@ -6,7 +6,7 @@ Library of class models.
 """
 
 from app import bcrypt, cursor, db
-from flask.ext.login import UserMixin
+from flask_login import UserMixin
 
 
 # define user class per flask-login spec
@@ -33,7 +33,7 @@ class User(UserMixin):
             self.data = dict(zip(cols, cursor.fetchone()))
 
             # flask-login only accepts unicode ids
-            self.id = unicode(self.data["id"])
+            self.id = str(self.data["id"])
 
     def add(self, password):
         # method to add user into db
@@ -48,7 +48,7 @@ class User(UserMixin):
             )
         except Exception as e:
             # insert was unsuccessful
-            print e
+            print(e)
             return False
         else:
             # insert was successful

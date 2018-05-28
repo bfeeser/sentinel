@@ -40,4 +40,4 @@ def connect_db(**kwargs):
     db = MySQLdb.connect(**params)
     cursor = db.cursor()
 
-    return (db, cursor)
+    return db, cursor

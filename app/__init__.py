@@ -5,10 +5,10 @@ Sentinel
 Initializes application.
 """
 from flask import Flask
-from flask.ext.cache import Cache
-from flask.ext.bcrypt import Bcrypt
-from flask.ext.login import LoginManager
-from config import connect_db
+from flask_cache import Cache
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager
+from .config import connect_db
 
 # define flask app
 app = Flask(__name__)

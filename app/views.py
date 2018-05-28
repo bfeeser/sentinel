@@ -15,17 +15,12 @@ from flask import (
     send_from_directory,
     flash,
 )
-from flask.ext.login import (
-    login_user,
-    logout_user,
-    current_user,
-    login_required,
-)
+from flask_login import login_user, logout_user, current_user, login_required
 from app import app, cursor, lm, bcrypt
-from processes import get_processes, get_logs, get_hosts, get_patterns
+from .processes import get_processes, get_logs, get_hosts, get_patterns
 import datetime
-import forms
-import models
+from . import forms
+from . import models
 import os
 
 
@@ -185,7 +180,7 @@ def render_logs():
     hosts = get_hosts(cursor, g.user.data.get("role"))
 
     # set form path choices; they are coerced to unicode
-    form.path.choices = [(unicode(i[0]), i[3]) for i in hosts]
+    form.path.choices = [(str(i[0]), i[3]) for i in hosts]
 
     # handles load requests for patterns
     if request.args.get("pattern_id"):
@@ -200,7 +195,7 @@ def render_logs():
             form.pattern.data = pattern.data["pattern"]
 
             # set path
-            form.path.data = unicode(pattern.data["host"])
+            form.path.data = str(pattern.data["host"])
 
             # set scheduling forms
             form.recipients.data = pattern.data["recipients"]

@@ -4,7 +4,7 @@ Sentinel
 
 Library of forms.
 """
-from flask.ext.wtf import Form
+from flask_wtf import Form
 from wtforms import (
     widgets,
     HiddenField,
@@ -28,6 +28,7 @@ day_map = {
     "5": "Sat",
     "6": "Sun",
 }
+
 
 # wtform classes
 # http://wtforms.simplecodes.com/docs/0.6/validators.html
@@ -70,7 +71,7 @@ class Pattern(Form):
     time = DateTimeField("Time", [Optional()], format="%H:%M")
 
     # create sorted list of days to choose
-    choices = [(k, v) for k, v in sorted(day_map.iteritems())]
+    choices = [(k, v) for k, v in sorted(day_map.items())]
     days = MultiCheckbox("Days", [Optional()], choices=choices)
 
     # hidden field for pattern_id
