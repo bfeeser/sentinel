@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+Flask = "*"
+Flask-Bcrypt = "*"
+Flask-Caching = "*"
+Flask-Login = "*"
+Flask-WTF = "*"
+PyMySQL = "*"
+psutil = "*"
+simplejson = "*"
+tornado = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.6"
