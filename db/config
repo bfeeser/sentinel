@@ -1,0 +1,6 @@
+[db]
+host=db
+port=3306
+database=sentinel
+user=sentinel
+password=sentinel
