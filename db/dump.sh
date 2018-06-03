@@ -17,7 +17,6 @@ TABLES=(
     patterns
     roles
     role_hosts
-    users
 )
 
 echo "Dumping data from $TABLES into db/data.sql"
