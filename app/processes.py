@@ -54,10 +54,10 @@ def get_processes(host, username, port=None):
     # http://getbootstrap.com/css/#buttons
     # https://pythonhosted.org/psutil/#constants
     status_map = {}
-    status_map["success"] = set(["running"])
-    status_map["info"] = set(["waiting", "waking", "sleeping", "disk_sleep"])
-    status_map["warning"] = set(["locked", "idle", "stopped", "tracing_stop"])
-    status_map["danger"] = set(["dead", "zombie", "wake_kill"])
+    status_map["success"] = {"running"}
+    status_map["info"] = {"waiting", "waking", "sleeping", "disk_sleep"}
+    status_map["warning"] = {"locked", "idle", "stopped", "tracing_stop"}
+    status_map["danger"] = {"dead", "zombie", "wake_kill"}
 
     # while connected to host iterate through processes
     # https://pythonhosted.org/psutil/#psutil.process_iter
@@ -106,7 +106,7 @@ def get_logs(path, pattern, host, username, port=None, alert=False):
     # validate path
     try:
         files = os.listdir(path)
-    except:
+    except Exception:
         # return not found; invalid path
         return abort(404)
 
@@ -119,7 +119,7 @@ def get_logs(path, pattern, host, username, port=None, alert=False):
 
     try:
         compiled = re.compile(pattern, re.IGNORECASE)
-    except:
+    except Exception:
         # return bad request if unable to compile pattern
         return abort(400)
 
@@ -131,7 +131,7 @@ def get_logs(path, pattern, host, username, port=None, alert=False):
         # open file and loop through lines
         try:
             f = open(log, "r")
-        except:
+        except Exception:
             # if open fails, skip file
             continue
 
@@ -183,7 +183,7 @@ def get_logs(path, pattern, host, username, port=None, alert=False):
         # return alert html: header and get_table
         html = """ <html><body>
                 <h2>Sentinel Alert</h2>
-                <h4>Host: {0}</h4> 
+                <h4>Host: {0}</h4>
                 <h4>Path: {1}</h4>
                 <h4>Pattern: {2}</h4>
                 <br/>
@@ -202,9 +202,16 @@ def get_patterns(cursor, user_id):
     # get a user's patterns for view
     cursor.execute(
         """ SELECT
-                p.id, p.name, p.pattern, p.recipients, 
-                p.schedule_days, p.schedule_time, p.updated_ts,
-                h.host, h.host_user, h.path
+                p.id,
+                p.name,
+                p.pattern,
+                p.recipients,
+                p.schedule_days,
+                p.schedule_time,
+                p.updated_ts,
+                h.host,
+                h.host_user,
+                h.path
             FROM patterns p
             JOIN hosts h
                 ON h.id = p.host
@@ -218,7 +225,7 @@ def get_patterns(cursor, user_id):
     cols = [i[0] for i in cursor.description]
     for row in cursor.fetchall():
         # create pattern dict
-        pattern = dict(zip(cols, row)))
+        pattern = dict(zip(cols, row))
 
         # create name anchor tag
         pattern["name"] = (
@@ -310,7 +317,7 @@ def get_modal(modal_type, text, l):
                   </div>
                 </div><!-- /.modal-content -->
               </div><!-- /.modal-dialog -->
-            </div><!-- /.modal --> 
+            </div><!-- /.modal -->
         """.format(
         text, modal_type, get_paragraph(l)
     )

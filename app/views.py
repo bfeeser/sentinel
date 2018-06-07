@@ -5,6 +5,7 @@ Sentinel
 Library of views.
 """
 
+import datetime
 from flask import (
     g,
     abort,
@@ -16,12 +17,13 @@ from flask import (
     flash,
 )
 from flask_login import login_user, logout_user, current_user, login_required
-from app import app, cursor, lm, bcrypt
+import os
 from .processes import get_processes, get_logs, get_hosts, get_patterns
-import datetime
+
+from app import app, login_manager, bcrypt
+from db import connect
 from . import forms
 from . import models
-import os
 
 
 @app.route("/")
@@ -31,25 +33,44 @@ import os
 def index():
     return render_template(
         "index.html",
-        hosts=get_hosts(cursor, g.user.data.get("role")),
+        hosts=get_hosts(g.cursor, g.user.data.get("role")),
         active=0,
     )
 
 
-# set global user equal to current user
-# on every request
+def after_this_request(func):
+    if not hasattr(g, "call_after_request"):
+        g.call_after_request = []
+    g.call_after_request.append(func)
+    return func
+
+
+@app.after_request
+def per_request_callbacks(response):
+    for func in getattr(g, "call_after_request", ()):
+        response = func(response)
+    return response
+
+
 @app.before_request
 def before_request():
     g.user = current_user
+    g.db, g.cursor = connect()
+
+    @after_this_request
+    def cleanup(response):
+        g.db.commit()
+        g.db.close()
+        return response
 
 
-# redirect /favicon to /img/favicon
-# http://flask.pocoo.org/docs/0.10/patterns/favicon/
 @app.route("/favicon.ico")
 @app.route("/img/favicon.ico")
 def favicon():
+    """  http://flask.pocoo.org/docs/1.0/patterns/favicon/ """
+
     return send_from_directory(
-        os.path.join(app.root_path, "static/img"),
+        os.path.join(app.root_path, "/static/img"),
         "favicon.ico",
         mimetype="img/vnd.microsoft.icon",
     )
@@ -63,7 +84,6 @@ def processes():
     if not check_params(
         request.args.get("host"), request.args.get("username")
     ):
-        # report bad request
         abort(400)
 
     return get_processes(
@@ -80,7 +100,7 @@ def render_patterns():
     return render_template(
         "patterns.html",
         user_id=g.user.data.get("id"),
-        hosts=get_hosts(cursor, g.user.data.get("role")),
+        hosts=get_hosts(g.cursor, g.user.data.get("role")),
         active=2,
     )
 
@@ -93,7 +113,7 @@ def patterns():
         # report bad request
         abort(400)
 
-    return get_patterns(cursor, request.args.get("user_id"))
+    return get_patterns(g.cursor, request.args.get("user_id"))
 
 
 @app.route("/register", methods=["POST", "GET"])
@@ -150,13 +170,13 @@ def login():
 
 
 # provide login manager a user loader
-@lm.user_loader
+@login_manager.user_loader
 def load_user(id):
     # required by flask-login to load users
-    cursor.execute("SELECT email FROM users WHERE id = %s", (id,))
-    if cursor.rowcount:
+    g.cursor.execute("SELECT email FROM users WHERE id = %s", (id,))
+    if g.cursor.rowcount:
         # return user object
-        return models.User(cursor.fetchone()[0])
+        return models.User(g.cursor.fetchone()[0])
     else:
         # return None if user does not exist per spec
         return None
@@ -177,7 +197,7 @@ def render_logs():
     form = forms.Pattern()
 
     # create host list
-    hosts = get_hosts(cursor, g.user.data.get("role"))
+    hosts = get_hosts(g.cursor, g.user.data.get("role"))
 
     # set form path choices; they are coerced to unicode
     form.path.choices = [(str(i[0]), i[3]) for i in hosts]
@@ -246,7 +266,7 @@ def render_logs():
             pattern = models.Pattern.create(*pattern_data)
 
             # redirect to new pattern's page
-            return redirect("/logs?pattern_id={}".format(pattern.id))
+            return redirect(f"/logs?pattern_id={pattern.id}")
         else:
             # pattern did not exist; bad request
             flash("Pattern does not exist", "warning")

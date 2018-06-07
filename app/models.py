@@ -5,32 +5,23 @@ Sentinel
 Library of class models.
 """
 
-from app import bcrypt, cursor, db
+from flask import g
 from flask_login import UserMixin
 
+from app import bcrypt
+import db
 
-# define user class per flask-login spec
-# https://flask-login.readthedocs.org/en/latest/
+
 class User(UserMixin):
-
     def __init__(self, email):
-        # define user values upon init; set to empty
         self.data = {}
         self.email = email
         self.id = None
 
-        # get user attributes from database
-        cursor.execute(
-            """ SELECT *
-                FROM users
-                WHERE email = %s""",
-            (email,),
-        )
+        db.query(g.cursor, "users", email=email)
 
-        if cursor.rowcount:
-            # store attributes in a dictionary
-            cols = [i[0] for i in cursor.description]
-            self.data = dict(zip(cols, cursor.fetchone()))
+        if g.cursor.rowcount:
+            self.data = db.result_as_dict(g.cursor)
 
             # flask-login only accepts unicode ids
             self.id = str(self.data["id"])
@@ -39,20 +30,15 @@ class User(UserMixin):
         # method to add user into db
         # returns false on failure; true on success
         try:
-            cursor.execute(
-                """ INSERT INTO users
-                        (email, password)
-                    VALUES(%s, %s)
-                """,
-                (self.email, bcrypt.generate_password_hash(password)),
+            db.insert(
+                g.cursor,
+                "users",
+                email=self.data["email"],
+                password=bcrypt.generate_password_hash(password),
             )
-        except Exception as e:
-            # insert was unsuccessful
-            print(e)
+        except Exception:
             return False
         else:
-            # insert was successful
-            db.commit()
             return True
 
 
@@ -66,30 +52,17 @@ class Pattern(object):
         self.id = id
 
         # get pattern attributes from database
-        cursor.execute(
-            """ SELECT *
-                FROM patterns
-                WHERE id = %s""",
-            (id,),
-        )
+        db.query(g.cursor, "patterns", id=id)
 
-        if cursor.rowcount:
-            # store attributes in a dictionary
-            cols = [i[0] for i in cursor.description]
-            self.data = dict(zip(cols, cursor.fetchone()))
+        if g.cursor.rowcount:
+            self.data = db.result_as_dict(g.cursor)
 
             # set schedule time to string; not a time object
             if self.data["schedule_time"]:
                 self.data["schedule_time"] = str(self.data["schedule_time"])
 
     def get_host(self):
-        # using pattern host id get host info
-        cursor.execute(
-            """ SELECT host, host_user, path
-                FROM hosts
-                WHERE id = %s""",
-            (self.data.get("host"),),
-        )
+        db.query(g.cursor, "hosts", id=self.data.get("host"))
 
     def update(
         self,
@@ -111,26 +84,7 @@ class Pattern(object):
         self.data["schedule_days"] = schedule_days
         self.data["schedule_time"] = schedule_time
 
-        # build query to update db
-        cursor.execute(
-            """ REPLACE INTO patterns
-                (id, pattern, name, user, host, recipients,
-                 schedule_days, schedule_time)
-                VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                self.id,
-                pattern,
-                name,
-                user,
-                host,
-                recipients,
-                schedule_days,
-                schedule_time,
-            ),
-        )
-
-        db.commit()
+        db.insert(g.cursor, "patterns", replace=True, id=self.id, **self.data)
 
     @classmethod
     def create(
@@ -143,37 +97,26 @@ class Pattern(object):
         schedule_days,
         schedule_time,
     ):
-        # function to create pattern
-        # build query to insert into db
-        cursor.execute(
-            """ INSERT INTO patterns
-                (pattern, name, user, host, recipients,
-                 schedule_days, schedule_time)
-                VALUES(%s, %s, %s, %s, %s, %s, %s)
-            """,
-            (
-                pattern,
-                name,
-                user,
-                host,
-                recipients,
-                schedule_days,
-                schedule_time,
-            ),
+        db.insert(
+            g.cursor,
+            "patterns",
+            pattern=pattern,
+            name=name,
+            user=user,
+            host=host,
+            recipients=recipients,
+            schedule_days=schedule_days,
+            schedule_time=schedule_time,
         )
 
-        db.commit()
-
         # instantiate self using last insert id
-        return cls(cursor.lastrowid)
+        return cls(g.cursor.lastrowid)
 
     def delete(self, user):
         # ensure only owners can delete patterns
-        cursor.execute(
+        g.cursor.execute(
             """ DELETE FROM patterns
                 WHERE id = %s
                 AND user = %s""",
             (self.id, user),
         )
-
-        db.commit()

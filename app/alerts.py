@@ -1,4 +1,4 @@
-#!/home/jharvard/vhosts/sentinel/flask/bin/python
+#!/usr/bin/env python
 """
 Ben Feeser
 Sentinel
@@ -20,9 +20,12 @@ from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 
 
+from db import connect
+
+
 def get_scheduled_patterns():
     # connects to db to get all scheduled alerts
-    db, cursor = config.connect_db()
+    db, cursor = connect()
 
     # use tornado logging and option parsing
     tornado.options.parse_command_line()
@@ -33,19 +36,23 @@ def get_scheduled_patterns():
     cursor.execute(
         """
         SELECT
-            a.name, a.recipients, a.pattern,
-            h.path, h.host, h.host_user
-        FROM patterns a
+            p.name,
+            p.recipients,
+            p.pattern,
+            h.path,
+            h.host,
+            h.host_user
+        FROM patterns p
         JOIN hosts h
             ON h.id = a.host
-        WHERE a.schedule_days LIKE
+        WHERE p.schedule_days LIKE
             CONCAT('%', WEEKDAY(CURDATE()), '%')
-            AND a.schedule_time = SUBSTRING(CURTIME(), 1, 5)
-        AND a.recipients IS NOT NULL
+            AND p.schedule_time = SUBSTRING(CURTIME(), 1, 5)
+        AND p.recipients IS NOT NULL
         """
     )
 
-    logging.info("found {} alerts".format(cursor.rowcount))
+    logging.info(f"found {cursor.rowcount} alerts")
 
     success = 0
     errors = 0
@@ -65,7 +72,7 @@ def get_scheduled_patterns():
             send(
                 email_to=recipients,
                 html=get_logs(path, pattern, host, host_user, alert=True),
-                subject="Sentinel Alert: {}".format(name),
+                subject=f"Sentinel Alert: {name}",
             )
         except Exception as e:
             # log failed alerts
@@ -76,9 +83,9 @@ def get_scheduled_patterns():
             success += 1
 
     # log successes and errors
-    logging.info("successfully sent {} alerts".format(success))
+    logging.info(f"successfully sent {success} alerts")
     if errors:
-        logging.warning("{} alerts encountered errors".format(errors))
+        logging.warning(f"{errors} alerts encountered errors")
 
     # close connection
     logging.info("finished")

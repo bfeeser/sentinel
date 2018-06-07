@@ -5,12 +5,10 @@ Sentinel
 Initializes application.
 """
 from flask import Flask
-from flask_cache import Cache
+from flask_caching import Cache
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-from .config import connect_db
 
-# define flask app
 app = Flask(__name__)
 
 # instantiate cache for session memoization
@@ -21,15 +19,13 @@ cache.init_app(app)
 bcrypt = Bcrypt(app)
 
 # initialize Login Manager
-lm = LoginManager()
-lm.init_app(app)
-lm.login_view = "login"
-lm.login_message_category = "info"
-lm.next_url = None
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+login_manager.login_message_category = "info"
+login_manager.next_url = None
 
 # get database configuration
 app.config.from_pyfile("config.py")
-
-db, cursor = connect_db()
 
 from app import views, models

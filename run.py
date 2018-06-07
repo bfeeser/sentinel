@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Runs flask application in production or debug mode.
 """
