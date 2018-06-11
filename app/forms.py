@@ -4,7 +4,7 @@ Sentinel
 
 Library of forms.
 """
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import (
     widgets,
     HiddenField,
@@ -32,7 +32,7 @@ day_map = {
 
 # wtform classes
 # http://wtforms.simplecodes.com/docs/0.6/validators.html
-class Login(Form):
+class Login(FlaskForm):
     # form to login users; subclass of base form class
     email = TextField("Email", [Required(), Email(), Length(min=4, max=50)])
     pwd = PasswordField("Password", [Required(), Length(min=6, max=25)])
@@ -60,7 +60,7 @@ class MultiCheckbox(SelectMultipleField):
     option_widget = widgets.CheckboxInput()
 
 
-class Pattern(Form):
+class Pattern(FlaskForm):
     # required fields
     path = SelectField("Path")
     pattern = TextField("Pattern", [Required(), Length(min=1, max=255)])
