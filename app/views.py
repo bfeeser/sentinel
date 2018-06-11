@@ -144,7 +144,7 @@ def login():
     form = forms.Login()
 
     # check if user exists and is already authenticted
-    if g.user is not None and g.user.is_authenticated():
+    if g.user is not None and g.user.is_authenticated:
         return redirect("/index")
 
     if form.validate_on_submit():
