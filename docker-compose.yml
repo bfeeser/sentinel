@@ -8,13 +8,13 @@ services:
     links:
       - db
   db:
-    image: mysql:latest
+    image: mysql:5.7
     restart: always
     ports:
       - 3306:3306
     volumes:
-      - ./db/sql/schema.sql:/docker-entrypoint-initdb.d/1_schema.sql
-      - ./db/sql/data.sql:/docker-entrypoint-initdb.d/2_data.sql
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/1_schema.sql
+      - ./db/data.sql:/docker-entrypoint-initdb.d/2_data.sql
     environment:
       MYSQL_ROOT_PASSWORD: sentinel
       MYSQL_DATABASE: sentinel
