@@ -6,7 +6,9 @@ import pymysql
 
 def read_config(path="db/config"):
     if os.path.exists("db/config"):
-        return ConfigParser(path)
+        config = ConfigParser()
+        config.read(path)
+        return config
     else:
         raise RuntimeError(f"Missing {path} config file")
 
@@ -18,10 +20,10 @@ def connect(**kwargs):
     params["charset"] = "utf8"
     params["connect_timeout"] = 10
     params["local_infile"] = 1
-    params["db"] = config.get("db", "db")
-    params["host"] = config.get("db", "host")
-    params["user"] = config.get("db", "user")
-    params["password"] = config.get("db", "password")
+    params["db"] = config.get("mysql", "database")
+    params["host"] = config.get("mysql", "host")
+    params["user"] = config.get("mysql", "user")
+    params["password"] = config.get("mysql", "password")
     params.update(**kwargs)
 
     db = pymysql.connect(**params)
