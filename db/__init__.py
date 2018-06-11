@@ -20,10 +20,10 @@ def connect(**kwargs):
     params["charset"] = "utf8"
     params["connect_timeout"] = 10
     params["local_infile"] = 1
-    params["db"] = config.get("mysql", "database")
-    params["host"] = config.get("mysql", "host")
-    params["user"] = config.get("mysql", "user")
-    params["password"] = config.get("mysql", "password")
+    params["db"] = "sentinel"  # TODO: unhardcode
+    params["host"] = config.get("client", "host")
+    params["user"] = config.get("client", "user")
+    params["password"] = config.get("client", "password")
     params.update(**kwargs)
 
     db = pymysql.connect(**params)
