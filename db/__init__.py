@@ -51,7 +51,7 @@ def query(cursor, table, select="*", **where_clause):
         f"""
         SELECT {select}
         FROM {table}
-        {where(where_clause.keys())}
+        {where(*where_clause.keys())}
         """,
         tuple(where_clause.values()),
     )
