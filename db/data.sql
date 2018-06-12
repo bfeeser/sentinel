@@ -21,7 +21,7 @@
 
 LOCK TABLES `hosts` WRITE;
 /*!40000 ALTER TABLE `hosts` DISABLE KEYS */;
-INSERT INTO `hosts` VALUES (1,'appliance','jharvard','logs/','2015-05-09 07:07:56');
+INSERT INTO `hosts` VALUES (1,'Benjamins-MacBook-Air-2.local','benjaminfeeser','logs/','2018-06-12 02:28:57');
 /*!40000 ALTER TABLE `hosts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -64,4 +64,3 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-06-10 23:07:04
