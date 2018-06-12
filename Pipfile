@@ -12,10 +12,10 @@ Flask-WTF = "*"
 PyMySQL = "*"
 psutil = "*"
 simplejson = "*"
-tornado = "*"
+python-dotenv = "*"
 
 [dev-packages]
-black = ">=18.5b1"
+black = "==18.6b2"
 pre-commit = "*"
 
 [requires]
