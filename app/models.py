@@ -26,14 +26,13 @@ class User(UserMixin):
             # flask-login only accepts unicode ids
             self.id = str(self.data["id"])
 
-    def add(self, password):
-        # method to add user into db
-        # returns false on failure; true on success
+    @staticmethod
+    def create(email, password):
         try:
             db.insert(
                 g.cursor,
                 "users",
-                email=self.data["email"],
+                email=email,
                 password=bcrypt.generate_password_hash(password),
             )
         except Exception:

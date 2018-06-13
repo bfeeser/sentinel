@@ -18,7 +18,7 @@ from wtforms import (
 )
 from wtforms.validators import Email, Length, Required, EqualTo, Optional
 
-# global day map
+
 day_map = {
     "0": "Mon",
     "1": "Tue",
@@ -30,8 +30,6 @@ day_map = {
 }
 
 
-# wtform classes
-# http://wtforms.simplecodes.com/docs/0.6/validators.html
 class Login(FlaskForm):
     # form to login users; subclass of base form class
     email = TextField("Email", [Required(), Email(), Length(min=4, max=50)])
@@ -54,8 +52,6 @@ class Register(Login):
 
 
 class MultiCheckbox(SelectMultipleField):
-    # subclass select multiple field to get a list of checkboxes
-    # https://gist.github.com/doobeh/4668212
     widget = widgets.ListWidget(prefix_label=False)
     option_widget = widgets.CheckboxInput()
 

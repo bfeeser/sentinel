@@ -21,7 +21,7 @@ import os
 from .processes import get_processes, get_logs, get_hosts, get_patterns
 
 from app import app, login_manager, bcrypt
-from db import connect
+from db import connect, query
 from . import forms
 from . import models
 
@@ -54,6 +54,9 @@ def per_request_callbacks(response):
 
 @app.before_request
 def before_request():
+    if request.path == "/favicon.ico":
+        return
+
     g.user = current_user
     g.db, g.cursor = connect()
 
@@ -65,10 +68,8 @@ def before_request():
 
 
 @app.route("/favicon.ico")
-@app.route("/img/favicon.ico")
 def favicon():
     """  http://flask.pocoo.org/docs/1.0/patterns/favicon/ """
-
     return send_from_directory(
         os.path.join(app.root_path, "/static/img"),
         "favicon.ico",
@@ -76,11 +77,11 @@ def favicon():
     )
 
 
-# processes view to monitor host's processes
-# similar to UNIX's top or htop
 @app.route("/api/processes")
 @login_required
 def processes():
+    """ processes view to monitor host's processes
+        similar to UNIX's top or htop """
     if not check_params(
         request.args.get("host"), request.args.get("username")
     ):
@@ -93,10 +94,10 @@ def processes():
     )
 
 
-# view for users patterns
 @app.route("/patterns")
 @login_required
 def render_patterns():
+    """ view for users patterns """
     return render_template(
         "patterns.html",
         user_id=g.user.data.get("id"),
@@ -105,12 +106,10 @@ def render_patterns():
     )
 
 
-# api for users patterns
 @app.route("/api/patterns")
 @login_required
 def patterns():
     if not check_params(request.args.get("user_id")):
-        # report bad request
         abort(400)
 
     return get_patterns(g.cursor, request.args.get("user_id"))
@@ -118,37 +117,33 @@ def patterns():
 
 @app.route("/register", methods=["POST", "GET"])
 def register():
-    # register users
     form = forms.Register()
 
     if form.validate_on_submit():
-        # create user object
-        user = models.User(email=form.email.data)
-
-        if not user.add(form.pwd.data):
+        if not models.User.create(
+            email=form.email.data, password=form.pwd.data
+        ):
             flash("Email already exists", "danger")
             return redirect("/register")
-        else:
-            # successfully added user, log them in
-            flash("Logged successfully.", "info")
-            login_user(user, remember=form.remember_me.data)
-            return redirect(request.args.get("next") or url_for("index"))
+
+        user = models.User(email=form.email.data)
+
+        flash("Registered successfully.", "info")
+        login_user(user, remember=form.remember_me.data)
+        return redirect(request.args.get("next") or url_for("index"))
 
     return render_template("register.html", form=form)
 
 
-# creates login view
 @app.route("/login", methods=["POST", "GET"])
 def login():
-    # create login form
     form = forms.Login()
 
-    # check if user exists and is already authenticted
     if g.user is not None and g.user.is_authenticated:
         return redirect("/index")
 
     if form.validate_on_submit():
-        # create user objects
+
         user = models.User(email=form.email.data)
 
         # validate email: if valid continue
@@ -169,20 +164,13 @@ def login():
     return render_template("login.html", form=form)
 
 
-# provide login manager a user loader
 @login_manager.user_loader
 def load_user(id):
-    # required by flask-login to load users
-    g.cursor.execute("SELECT email FROM users WHERE id = %s", (id,))
+    query(g.cursor, "users", id=id)
     if g.cursor.rowcount:
-        # return user object
-        return models.User(g.cursor.fetchone()[0])
-    else:
-        # return None if user does not exist per spec
-        return None
+        return models.User(email=g.cursor.fetchone()[1])
 
 
-# logs the user out
 @app.route("/logout")
 @login_required
 def logout():
@@ -193,10 +181,8 @@ def logout():
 @app.route("/logs", methods=["POST", "GET"])
 @login_required
 def render_logs():
-    # create pattern form
     form = forms.Pattern()
 
-    # create host list
     hosts = get_hosts(g.cursor, g.user.data.get("role"))
 
     # set form path choices; they are coerced to unicode
@@ -283,7 +269,6 @@ def logs():
         request.args.get("host"),
         request.args.get("username"),
     ):
-        # report bad request
         abort(400)
 
     return get_logs(
