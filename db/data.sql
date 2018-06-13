@@ -21,7 +21,7 @@
 
 LOCK TABLES `hosts` WRITE;
 /*!40000 ALTER TABLE `hosts` DISABLE KEYS */;
-INSERT INTO `hosts` VALUES (1,'Benjamins-MacBook-Air-2.local','benjaminfeeser','logs/','2018-06-12 02:28:57');
+INSERT INTO `hosts` VALUES (1,'localhost','benjaminfeeser','logs/','2018-06-13 02:00:39');
 /*!40000 ALTER TABLE `hosts` ENABLE KEYS */;
 UNLOCK TABLES;
 

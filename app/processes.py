@@ -29,18 +29,15 @@ def connect(host, username, port=None):
     """ Connects to a remote host via SSH """
 
     # do not connect if we are already connected
-    if host == socket.gethostname():
+    if host == socket.gethostname() or host == "localhost":
         return
 
-    # connect via ssh; create command
     cmd = ["ssh"]
-
-    # handle port if port
     if port:
         cmd.append("-p" + str(port))
 
     # concat username and host
-    cmd.append("{}@{}".format(username, host))
+    cmd.append(f"{username}@{host}")
 
     subprocess.check_call(cmd)
 
@@ -53,11 +50,12 @@ def get_processes(host, username, port=None):
     # create status map
     # http://getbootstrap.com/css/#buttons
     # https://pythonhosted.org/psutil/#constants
-    status_map = {}
-    status_map["success"] = {"running"}
-    status_map["info"] = {"waiting", "waking", "sleeping", "disk_sleep"}
-    status_map["warning"] = {"locked", "idle", "stopped", "tracing_stop"}
-    status_map["danger"] = {"dead", "zombie", "wake_kill"}
+    status_map = {
+        "success": {"running"},
+        "info": {"waiting", "waking", "sleeping", "disk_sleep"},
+        "warning": {"locked", "idle", "stopped", "tracing_stop"},
+        "danger": {"dead", "zombie", "wake_kill"},
+    }
 
     # while connected to host iterate through processes
     # https://pythonhosted.org/psutil/#psutil.process_iter
@@ -79,13 +77,16 @@ def get_processes(host, username, port=None):
             # if the process doesn't exist any more, proceed
             continue
 
-        # clean up output
-        # round cpu and mem percentages
-        pinfo["cpu_percent"] = round(pinfo["cpu_percent"], 1)
-        pinfo["memory_percent"] = round(pinfo["memory_percent"], 1)
+        try:
+            # clean up output
+            # round cpu and mem percentages
+            pinfo["cpu_percent"] = round(pinfo["cpu_percent"], 1)
+            pinfo["memory_percent"] = round(pinfo["memory_percent"], 1)
 
-        # turn cmdline into string from list
-        pinfo["cmdline"] = " ".join(pinfo["cmdline"])
+            # turn cmdline into string from list
+            pinfo["cmdline"] = " ".join(pinfo["cmdline"])
+        except TypeError:
+            continue
 
         # create fancy status label using status map
         for status in list(status_map.keys()):
@@ -147,7 +148,7 @@ def get_logs(path, pattern, host, username, port=None, alert=False):
             # match text to compiled pattern
             if compiled.findall(line):
                 # we found a match, record it
-                matches.append("<p>{}</p>".format(line))
+                matches.append(f"<p>{line}</p>")
                 button_text = "Match"
 
         f.close()
@@ -181,15 +182,13 @@ def get_logs(path, pattern, host, username, port=None, alert=False):
         return jsonify(log_status)
     else:
         # return alert html: header and get_table
-        html = """ <html><body>
-                <h2>Sentinel Alert</h2>
-                <h4>Host: {0}</h4>
-                <h4>Path: {1}</h4>
-                <h4>Pattern: {2}</h4>
+        html = f""" <html><body>
+               e <h2>Sentinel Alert</h2>
+                <h4>Host: {host}</h4>
+                <h4>Path: {path}</h4>
+                <h4>Pattern: {pattern}</h4>
                 <br/>
-            """.format(
-            host, path, pattern
-        )
+            """
 
         html += get_table(keys=("Log", "Status", "Output"), data=log_status)
 
@@ -228,11 +227,9 @@ def get_patterns(cursor, user_id):
         pattern = dict(zip(cols, row))
 
         # create name anchor tag
-        pattern["name"] = (
-            "<a href=logs?pattern_id={}>".format(pattern["id"])
-            + pattern["name"]
-            + "</n>"
-        )
+        pattern[
+            "name"
+        ] = f"<a href=logs?pattern_id={pattern['id']}>{pattern['name']}</n>"
 
         # ensure datetime objects are strings
         # (they cannot be jsonified)
@@ -270,35 +267,33 @@ def get_hosts(cursor, role_id):
 
 def get_label(label_type, text):
     # define label format
-    return '<span class="label label-{}">{}</span>'.format(label_type, text)
+    return f'<span class="label label-{label_type}">{text}</span>'
 
 
 def get_anchor(link, text):
     # define anchor format for modals
-    return '<a data-toggle="modal" data-target="#{}">{}</a>'.format(link, text)
+    return f'<a data-toggle="modal" data-target="#{link}">{text}</a>'
 
 
 def get_button(button_type, text, link=""):
     # define button format for modals
-    return """<button type="button"
+    return f"""<button type="button"
                       data-toggle="modal"
-                      data-target="#{}"
-                      class="btn btn-{}">
-                {}
-               </button>""".format(
-        link, button_type, text
-    )
+                      data-target="#{link}"
+                      class="btn btn-{button_type}">
+                {text}
+               </button>"""
 
 
 def get_paragraph(l):
     # convert list of text lines to paragraph
-    return "<p>" + "<br>".join(l) + "</p>"
+    return f"<p>{'<br>'.join(l)}</p>"
 
 
 def get_modal(modal_type, text, l):
     # make modal; a popup containing content of list l
     # http://getbootstrap.com/javascript/#modals
-    return """ <div id="{1}-{0}" class="modal fade">
+    return f""" <div id="{modal_type}-{text}" class="modal fade">
               <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                   <div class="modal-header">
@@ -306,10 +301,10 @@ def get_modal(modal_type, text, l):
                         data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                    <h4 class="modal-title">{0} {1}</h4>
+                    <h4 class="modal-title">{text} {modal_type}</h4>
                   </div>
                   <div class="modal-body">
-                    {2}
+                    {get_paragraph(l)}
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-default"
@@ -318,9 +313,7 @@ def get_modal(modal_type, text, l):
                 </div><!-- /.modal-content -->
               </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
-        """.format(
-        text, modal_type, get_paragraph(l)
-    )
+        """
 
 
 def get_table(data, keys, nowrap=True):
@@ -328,9 +321,7 @@ def get_table(data, keys, nowrap=True):
     # keys should be a list of length data[0]
     if len(keys) != len(data[0]):
         raise RuntimeError(
-            "data length ({}) != key length ({})".format(
-                len(keys), len(data[0])
-            )
+            f"data length ({len(keys)}) != key length ({len(data[0])})"
         )
 
     # build data table
@@ -358,8 +349,8 @@ def get_table(data, keys, nowrap=True):
             style.append("white-space: nowrap;")
 
         # build tag_format
-        tag_format = '<{} style="{}">'.format(tag, "".join(style))
-        tag_format += "{}" + "</" + str(tag) + ">"
+        tag_format = f'<{tag} style="{"".join(style)}">'
+        tag_format += "{}" + f"</{tag}>"
 
         return "".join([tag_format.format(i) for i in data])
 
