@@ -3,6 +3,8 @@ services:
   app:
     restart: always
     build: .
+    volumes:
+      - .:/srv/sentinel
     ports:
       - 5000:5000
     links:

@@ -16,8 +16,6 @@ RUN apk update && apk add \
 RUN pip install pipenv
 RUN pipenv install --deploy --system
 
-EXPOSE 5000
-
-CMD ["python", "run.py"]
+CMD ["flask", "run", "--host=0.0.0.0"]
 
 # gunicorn -b :5000 --access-logfile - --error-logfile - sentinel:app
