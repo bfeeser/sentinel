@@ -63,59 +63,15 @@ class Pattern(object):
     def get_host(self):
         db.query(g.cursor, "hosts", id=self.data.get("host"))
 
-    def update(
-        self,
-        pattern,
-        name,
-        user,
-        host,
-        recipients,
-        schedule_days,
-        schedule_time,
-    ):
-        # function to update pattern data
-        # overwrite data with provided kwargs
-        self.data["pattern"] = pattern
-        self.data["name"] = name
-        self.data["user"] = user
-        self.data["host"] = host
-        self.data["recipients"] = recipients
-        self.data["schedule_days"] = schedule_days
-        self.data["schedule_time"] = schedule_time
-
-        db.insert(g.cursor, "patterns", replace=True, id=self.id, **self.data)
+    def update(self, **data):
+        self.data.update(**data)
+        db.update(g.cursor, "patterns", where={"id": self.id}, **self.data)
 
     @classmethod
-    def create(
-        cls,
-        pattern,
-        name,
-        user,
-        host,
-        recipients,
-        schedule_days,
-        schedule_time,
-    ):
-        db.insert(
-            g.cursor,
-            "patterns",
-            pattern=pattern,
-            name=name,
-            user=user,
-            host=host,
-            recipients=recipients,
-            schedule_days=schedule_days,
-            schedule_time=schedule_time,
-        )
-
-        # instantiate self using last insert id
+    def create(cls, **data):
+        db.insert(g.cursor, "patterns", **data)
         return cls(g.cursor.lastrowid)
 
     def delete(self, user):
         # ensure only owners can delete patterns
-        g.cursor.execute(
-            """ DELETE FROM patterns
-                WHERE id = %s
-                AND user = %s""",
-            (self.id, user),
-        )
+        db.delete(g.cursor, "patterns", id=self.id, user=user)

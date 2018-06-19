@@ -32,12 +32,31 @@ DROP TABLE IF EXISTS `hosts`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `hosts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `host` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `host_user` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `path` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `host` varchar(255) NOT NULL,
+  `host_user` varchar(255) NOT NULL,
+  `path` varchar(255) NOT NULL,
   `updated_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `pageviews`
+--
+
+DROP TABLE IF EXISTS `pageviews`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `pageviews` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `referrer` text,
+  `url_root` text NOT NULL,
+  `path` text NOT NULL,
+  `session_id` int(11) unsigned NOT NULL,
+  `user_id` int(11) unsigned DEFAULT NULL,
+  `created_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,16 +68,16 @@ DROP TABLE IF EXISTS `patterns`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `patterns` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `pattern` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `pattern` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
   `user` int(11) NOT NULL,
-  `recipients` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `recipients` varchar(255) DEFAULT NULL,
   `host` int(11) NOT NULL,
-  `schedule_days` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `schedule_days` varchar(255) DEFAULT NULL,
   `schedule_time` time DEFAULT NULL,
   `updated_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,7 +92,7 @@ CREATE TABLE `role_hosts` (
   `host` int(11) NOT NULL,
   `updated_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`role`,`host`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -85,10 +104,31 @@ DROP TABLE IF EXISTS `roles`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `roles` (
   `id` int(11) NOT NULL,
-  `role` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `role` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `role` (`role`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sessions`
+--
+
+DROP TABLE IF EXISTS `sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sessions` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `ip` varchar(255) NOT NULL,
+  `platform` varchar(255) NOT NULL,
+  `browser` varchar(255) NOT NULL,
+  `version` varchar(255) NOT NULL,
+  `user_agent` text NOT NULL,
+  `user_id` int(11) unsigned DEFAULT NULL,
+  `created_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_ts` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -100,14 +140,13 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `users` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `email` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `password` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `role` int(10) unsigned NOT NULL DEFAULT '1',
   `team` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `email` (`email`,`password`),
-  UNIQUE KEY `email_2` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

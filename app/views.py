@@ -14,6 +14,7 @@ from flask import (
     redirect,
     request,
     send_from_directory,
+    session,
     flash,
 )
 from flask_login import login_user, logout_user, current_user, login_required
@@ -21,7 +22,7 @@ import os
 from .processes import get_processes, get_logs, get_hosts, get_patterns
 
 from app import app, login_manager, bcrypt
-from db import connect, query
+from db import connect, query, insert
 from . import forms
 from . import models
 
@@ -60,6 +61,30 @@ def before_request():
     g.user = current_user
     g.db, g.cursor = connect()
 
+    if not session.get("id"):
+        insert(
+            cursor=g.cursor,
+            table="sessions",
+            ip=request.remote_addr,
+            platform=request.user_agent.platform,
+            browser=request.user_agent.browser,
+            version=request.user_agent.version,
+            user_agent=request.user_agent.string,
+            user_id=g.user.get_id(),
+        )
+
+        session["id"] = g.cursor.lastrowid
+
+    insert(
+        cursor=g.cursor,
+        table="pageviews",
+        referrer=request.referrer,
+        url_root=request.url_root,
+        path=request.full_path,
+        session_id=session["id"],
+        user_id=g.user.get_id(),
+    )
+
     @after_this_request
     def cleanup(response):
         g.db.commit()
@@ -69,7 +94,6 @@ def before_request():
 
 @app.route("/favicon.ico")
 def favicon():
-    """  http://flask.pocoo.org/docs/1.0/patterns/favicon/ """
     return send_from_directory(
         os.path.join(app.root_path, "/static/img"),
         "favicon.ico",
@@ -224,15 +248,15 @@ def render_logs():
     if form.validate_on_submit():
         # fields to save for pattern
         # in order of update and create methods of Pattern class
-        pattern_data = (
-            form.pattern.data,
-            form.name.data,
-            g.user.data["id"],
-            form.path.data,
-            form.recipients.data,
-            "".join(form.days.data),
-            form.time.data,
-        )
+        pattern_data = {
+            "pattern": form.pattern.data,
+            "name": form.name.data,
+            "user": g.user.data["id"],
+            "host": form.path.data,
+            "recipients": form.recipients.data,
+            "schedule_days": "".join(form.days.data),
+            "schedule_time": form.time.data,
+        }
 
         # if pattern id provided, check that it exists
         if form.pattern_id.data:
@@ -240,7 +264,7 @@ def render_logs():
             if pattern.data:
                 # if save button clicked, update
                 if form.save.data:
-                    pattern.update(*pattern_data)
+                    pattern.update(**pattern_data)
                 # if delete button clicked, update
                 elif form.delete.data:
                     pattern.delete(g.user.id)
@@ -249,7 +273,7 @@ def render_logs():
                 flash("Pattern does not exist", "warning")
         elif form.save.data:
             # create new pattern
-            pattern = models.Pattern.create(*pattern_data)
+            pattern = models.Pattern.create(**pattern_data)
 
             # redirect to new pattern's page
             return redirect(f"/logs?pattern_id={pattern.id}")

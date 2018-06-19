@@ -46,22 +46,26 @@ def result_as_list(cursor, ordered=False):
     return [_as_dict(cols, row, ordered=ordered) for row in cursor.fetchall()]
 
 
-def query(cursor, table, select="*", **where_clause):
+def query(cursor, table, select="*", **where):
     cursor.execute(
         f"""
         SELECT {select}
         FROM {table}
-        {where(*where_clause.keys())}
+        {build_where(*where.keys())}
         """,
-        tuple(where_clause.values()),
+        tuple(where.values()),
     )
 
 
-def where(*columns):
+def build_where(*columns):
+    return f"WHERE {build_clause(*columns) or 1}"
+
+
+def build_clause(*columns):
     if not columns:
         return ""
 
-    ret = "WHERE "
+    ret = ""
     for i, column in enumerate(columns):
         if i > 0:
             ret += "    "
@@ -81,4 +85,28 @@ def insert(cursor, table, replace=False, **data):
         VALUES ({', '.join('%s' for k in data)})
         """,
         tuple(data.values()),
+    )
+
+
+def update(cursor, table, where={}, **data):
+    if not data:
+        raise ValueError("data argument is required")
+
+    cursor.execute(
+        f"""
+        UPDATE {table}
+        SET {build_clause(*data.keys())}
+        {build_where(*where.keys())}
+        """,
+        tuple(data.values()) + tuple(where.values()),
+    )
+
+
+def delete(cursor, table, **where):
+    cursor.execute(
+        f"""
+        DELETE FROM {table}
+        {build_where(*where.keys())}
+        """,
+        tuple(where.values()),
     )
