@@ -1,10 +1,3 @@
-"""
-Ben Feeser
-Sentinel
-
-Library of views.
-"""
-
 import datetime
 from flask import (
     g,

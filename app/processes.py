@@ -1,9 +1,4 @@
 """
-Ben Feeser
-Sentinel
-
-Library of processes.
-
 get_processes(): Returns JSON data from a hosts's process list
 get_logs(): Returns JSON of log data from host
 get_patterns(): Returns JSON of pattern data from database

@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-"""
-Ben Feeser
-Sentinel
-
-Library to easily configure and send alerts;
-can send attachements as well.
-"""
-
 import smtplib
 import mimetypes
 import os

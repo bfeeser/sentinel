@@ -1,10 +1,3 @@
-"""
-Ben Feeser
-Sentinel
-
-Library of class models.
-"""
-
 from flask import g
 from flask_login import UserMixin
 

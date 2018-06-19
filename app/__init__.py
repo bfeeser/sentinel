@@ -1,9 +1,3 @@
-"""
-Ben Feeser
-Sentinel
-
-Initializes application.
-"""
 from flask import Flask
 from flask_caching import Cache
 from flask_bcrypt import Bcrypt

@@ -1,12 +1,3 @@
-/**
- * scripts.js
- *
- * Ben Feeser
- * Sentinel
- *
- * Global JavaScript.
- */
-
 // execute when the DOM is fully loaded
 $(function() {
 
