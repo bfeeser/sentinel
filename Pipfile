@@ -13,6 +13,10 @@ PyMySQL = "*"
 psutil = "*"
 simplejson = "*"
 python-dotenv = "*"
+flask-assets = "*"
+flask-compress = "*"
+cssmin = "*"
+jsmin = "*"
 
 [dev-packages]
 black = "==18.6b2"
